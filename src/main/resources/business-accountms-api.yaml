@@ -1,0 +1,228 @@
+openapi: 3.0.3
+info:
+  title: Aplicación de cuentas bancarias.
+  description: API para registrar, consultar, modificar y eliminar cuentas bancarias.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Servidor local
+
+paths:
+  /cuentas:
+    get:
+      summary: Listar objectos de tipo cuenta
+      operationId: listCuenta
+      description: Devuelve una lista de todos los objetos tipo cuenta
+      responses:
+        '200':
+          description: Lista de objetos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CuentaResponse'
+        '204':
+          description: No hay objetos cuentas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No se encontraron objetos tipo cuenta"
+    post:
+      summary: Registro de cuenta bancaria
+      operationId: agregarCuenta
+      description: Devuelve un objeto con todos los datos registrados y el id generado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CuentaRequest'
+      responses:
+        '200':
+          description: Objecto cuenta con id generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          description: Error en la solicitud.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Solicitud inválida."
+  /cuentas/{id}:
+    get:
+      summary: Ojecto de tipo cuenta
+      operationId: consultarCuenta
+      description: Devuelve un objeto tipo cuenta
+      parameters:
+        - name: id
+          in: path
+          description: Account ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Objeto tipo cuenta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '204':
+          description: No hay objetos cuentas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No se encontraron objetos tipo cuenta"
+    delete:
+      summary: Eliminar objeto cuenta
+      operationId: eliminarCuentaPorId
+      description: Eliminar un objeto tipo cuenta
+      parameters:
+        - name: id
+          in: path
+          description: Account ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: BAD REQUEST
+        '404':
+          description: NOT FOUND
+  /cuentas/{id}/depositar:
+    put:
+      summary: Depositar un monto indicado en la cuenta del Id
+      operationId: depositar
+      description: Devuelve un objeto Cuenta con el nuevo saldo
+      parameters:
+        - name: id
+          in: path
+          description: Account ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransaccionRequest'
+      responses:
+        '200':
+          description: Objecto cuenta con saldo modificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          description: Error en la solicitud.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Solicitud inválida."
+  /cuentas/{id}/retirar:
+    put:
+      summary: Retirar un monto indicado en la cuenta del Id
+      operationId: retirar
+      description: Devuelve un objeto Cuenta con el nuevo saldo
+      parameters:
+        - name: id
+          in: path
+          description: Account ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransaccionRequest'
+      responses:
+        '200':
+          description: Objecto cuenta con saldo modificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          description: Error en la solicitud.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Solicitud inválida."
+components:
+  schemas:
+    CuentaRequest:
+      type: object
+      properties:
+        saldo:
+          type: number
+          format: double
+          example: 50.0
+        tipoCuenta:
+          type: string
+          example: "CORRIENTE"
+        clienteId:
+          type: integer
+          example: 1
+      required:
+        - saldo
+        - tipoCuenta
+        - clienteId
+    CuentaResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        numeroCuenta:
+          type: string
+          example: "3689833908169079"
+        saldo:
+          type: number
+          format: double
+          example: 50.0
+        tipoCuenta:
+          type: string
+          example: "CORRIENTE"
+        clienteId:
+          type: integer
+          example: 1
+      required:
+        - id
+        - numeroCuenta
+        - saldo
+        - tipoCuenta
+        - clienteId
+    TransaccionRequest:
+      type: object
+      properties:
+        monto:
+          type: number
+          format: double
