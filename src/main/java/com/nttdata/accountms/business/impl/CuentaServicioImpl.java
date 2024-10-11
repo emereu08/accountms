@@ -6,6 +6,7 @@ import com.nttdata.accountms.business.excepcion.ErrorInternoExcepcion;
 import com.nttdata.accountms.business.excepcion.RecursoNoEncontradoExcepcion;
 import com.nttdata.accountms.business.mapper.CuentaMapper;
 import com.nttdata.accountms.business.util.Constantes;
+import com.nttdata.accountms.business.util.HttpConnection;
 import com.nttdata.accountms.model.CuentaRequest;
 import com.nttdata.accountms.model.CuentaResponse;
 import com.nttdata.accountms.model.TransaccionRequest;
@@ -14,7 +15,9 @@ import com.nttdata.accountms.repository.CuentaRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,9 @@ public class CuentaServicioImpl implements CuentaServicio {
     @Autowired
     private CuentaMapper cuentaMapper;
 
+    @Autowired
+    private HttpConnection httpConnection;
+
     @Override
     public List<CuentaResponse> listarCuentas() {
         return cuentaRepositorio.findAll().stream()
@@ -36,13 +42,19 @@ public class CuentaServicioImpl implements CuentaServicio {
     @Override
     public CuentaResponse guardarCuenta(CuentaRequest request) {
         Cuenta cuenta = cuentaMapper.getCuentaEntity(request);
-        Boolean validarSaldo = Cuenta.validarSaldo(cuenta.getSaldo());
-        if(!validarSaldo)
-            throw new ErrorInternoExcepcion("Error en el saldo registrado");
+        try {
+            Boolean validarClienteId = this.validarIdCliente(cuenta.getClienteId());
+            if (!validarClienteId)
+                throw new ErrorInternoExcepcion("Error en el saldo registrado");
+            Boolean validarSaldo = Cuenta.validarSaldo(cuenta.getSaldo());
+            if (!validarSaldo)
+                throw new ErrorInternoExcepcion("Error en el saldo registrado");
 
-        String numeroCuenta = Cuenta.getCuentaAleatoria();
-        cuenta.setNumeroCuenta(numeroCuenta);
-
+            String numeroCuenta = Cuenta.getCuentaAleatoria();
+            cuenta.setNumeroCuenta(numeroCuenta);
+        } catch (Exception e){
+            System.out.println("Error: "+e.getMessage());
+        }
         return cuentaMapper
                 .getCuentaListResponse(cuentaRepositorio.
                         save(cuenta));
@@ -114,6 +126,23 @@ public class CuentaServicioImpl implements CuentaServicio {
     private CuentaResponse modificarSaldo(CuentaResponse response){
         return cuentaMapper.getCuentaListResponse(cuentaRepositorio.
                 save(cuentaMapper.getCuentaOfResponseForTransaction(response)));
+    }
+
+    private boolean validarIdCliente(Integer id) {
+        boolean validacion = true;
+        Map<String, Object> cliente = getClienteById(id);
+        if(cliente==null)
+            validacion = false;
+        return validacion;
+    }
+
+    private Map<String, Object> getClienteById(Integer id)  {
+        Map<String, Object> cliente = new HashMap<>();
+        String uri = Constantes.URL_CLIENTEMS+id;
+
+        cliente = httpConnection.stringToMap(httpConnection.ejecutarSolicitudHttp(uri, "GET").toString());
+
+        return cliente;
     }
 
 }

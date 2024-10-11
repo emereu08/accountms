@@ -8,4 +8,8 @@ public class Constantes {
     public final static Integer LIMITE_CUENTA_AHORROS = 0;
 
     public final static Integer LIMITE_CUENTA_CORRIENTE = -500;
+
+    public final static String URL_CLIENTEMS = "http://localhost:8081/clientes/";
+
+
 }

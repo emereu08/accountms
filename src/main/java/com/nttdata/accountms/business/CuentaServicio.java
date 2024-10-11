@@ -9,7 +9,7 @@ import java.util.List;
 public interface CuentaServicio {
     List<CuentaResponse> listarCuentas();
 
-    CuentaResponse guardarCuenta(CuentaRequest request);
+    CuentaResponse guardarCuenta(CuentaRequest request) throws Exception;
 
     CuentaResponse buscarCuentaPorId(Integer idCuenta);
 

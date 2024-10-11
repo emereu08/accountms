@@ -24,8 +24,12 @@ public class CuentasApiDelegateImp implements CuentasApiDelegate {
     }
 
     @Override
-    public ResponseEntity<CuentaResponse> agregarCuenta(CuentaRequest cuentaRequest){
-        return ResponseEntity.ok(cuentaServicio.guardarCuenta(cuentaRequest));
+    public ResponseEntity<CuentaResponse> agregarCuenta(CuentaRequest cuentaRequest)  {
+        try {
+            return ResponseEntity.ok(cuentaServicio.guardarCuenta(cuentaRequest));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Override
